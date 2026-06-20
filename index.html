@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProQR | Ultimate 3D Glass</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Ultra-Reliable QR Code Library -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { darkbg: '#050b14' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        /* Liquid Background Animations */
+        @keyframes float1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(3%, 5%) scale(1.05); } }
+        @keyframes float2 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-3%, -5%) scale(1.05); } }
+        .blob-1 { animation: float1 18s infinite alternate ease-in-out; }
+        .blob-2 { animation: float2 22s infinite alternate ease-in-out; }
+
+        /* Glass Panels */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Inputs & Dropdowns */
+        .glass-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .glass-input:focus {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: #818cf8;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+
+        /* 3D Primary Button */
+        .btn-3d-primary {
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.8) 0%, rgba(67, 56, 202, 0.9) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4), 0 12px 24px rgba(79,70,229,0.3), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -4px 8px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            color: #ffffff;
+            transition: all 0.15s ease;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .btn-3d-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 15px 30px rgba(79,70,229,0.4), inset 0 1px 1px rgba(255,255,255,0.7), inset 0 -4px 8px rgba(0,0,0,0.4); }
+        .btn-3d-primary:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 3px 6px rgba(0,0,0,0.4); }
+
+        /* 3D Secondary Button */
+        .btn-3d-secondary {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -3px 6px rgba(0,0,0,0.3);
+            color: #e2e8f0;
+            transition: all 0.15s ease;
+        }
+        .btn-3d-secondary:not(:disabled):hover { transform: translateY(-2px); background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%); }
+        .btn-3d-secondary:not(:disabled):active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 3px 6px rgba(0,0,0,0.4); }
+        .btn-3d-secondary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; border-top: 1px solid rgba(255,255,255,0.1); }
+
+        /* Custom Elements */
+        input[type="color"] { -webkit-appearance: none; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; }
+        input[type="range"] { accent-color: #818cf8; cursor: pointer; }
+        input[type="checkbox"] { accent-color: #818cf8; width: 18px; height: 18px; cursor: pointer; }
+        
+        #qr-canvas-wrapper canvas, #qr-canvas-wrapper svg { max-width: 100%; height: auto; border-radius: 8px; }
+
+        /* Sidebar Transition classes */
+        .sidebar-open { transform: translateX(0); }
+        .sidebar-closed { transform: translateX(-100%); }
+    </style>
+</head>
+<body class="bg-darkbg text-slate-200 h-screen flex flex-col relative overflow-hidden selection:bg-indigo-500/40">
+
+    <!-- Subtle Background Blobs -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] right-[-5%] w-[60vw] h-[60vw] bg-indigo-600/20 rounded-full blur-[140px] blob-1"></div>
+        <div class="absolute bottom-[-10%] left-[-5%] w-[50vw] h-[50vw] bg-teal-600/15 rounded-full blur-[140px] blob-2"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="w-full pt-6 pb-4 px-6 z-20 flex-shrink-0 flex items-center justify-between border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl btn-3d-primary flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-qrcode text-white text-lg"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white drop-shadow-md">ProQR</h1>
+        </div>
+        
+        <!-- Mobile Menu Button -->
+        <button id="btn-toggle-sidebar" class="lg:hidden text-white hover:text-indigo-400 text-2xl transition">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+
+        <div class="text-sm font-semibold text-slate-300 bg-black/40 border border-white/10 px-4 py-1.5 rounded-full shadow-inner hidden lg:block">
+            v4.2 • Pro Edition
+        </div>
+    </header>
+
+    <!-- App Layout Wrapper -->
+    <div class="flex flex-1 overflow-hidden relative">
+
+        <!-- Mobile Overlay Backdrop -->
+        <div id="mobile-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden opacity-0 transition-opacity duration-300"></div>
+
+        <!-- Left Column: Settings Sidebar -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-[85%] sm:w-[380px] glass-panel border-r border-white/10 flex flex-col transition-transform duration-300 sidebar-closed lg:static lg:transform-none lg:w-[420px] lg:z-10 shadow-[20px_0_40px_rgba(0,0,0,0.5)] lg:shadow-none">
+            
+            <!-- Sidebar Header (Mobile Only) -->
+            <div class="flex items-center justify-between p-5 border-b border-white/10 lg:hidden">
+                <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-sliders text-indigo-400 mr-2"></i> Customization</h2>
+                <button id="btn-close-sidebar" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Settings -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-8 scroll-smooth">
+                
+                <!-- Content & Logo -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-white mb-2"><i class="fa-solid fa-link text-indigo-400 mr-2"></i>Data Content</label>
+                        <textarea id="qr-text" rows="2" class="w-full px-5 py-3 rounded-xl glass-input placeholder-slate-500 text-sm" placeholder="Enter URL, text, or data..."></textarea>
+                    </div>
+                    
+                    <!-- Logo Upload -->
+                    <div>
+                        <label class="block text-sm font-semibold text-white mb-2"><i class="fa-solid fa-image text-indigo-400 mr-2"></i>Center Logo</label>
+                        <div class="flex gap-3 items-center">
+                            <input type="file" id="logo-input" class="hidden" accept="image/png, image/jpeg, image/svg+xml">
+                            <button id="btn-upload" class="btn-3d-secondary py-2.5 px-4 rounded-xl text-sm font-semibold flex-grow flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-upload"></i> Upload
+                            </button>
+                            <button id="btn-clear-logo" class="btn-3d-secondary py-2.5 px-4 rounded-xl text-sm font-semibold hidden text-red-400">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-white/10">
+
+                <!-- Aesthetics -->
+                <div class="space-y-4">
+                    <label class="block text-sm font-semibold text-white mb-2"><i class="fa-solid fa-palette text-indigo-400 mr-2"></i>Colors & Background</label>
+                    
+                    <div class="flex items-center justify-between px-4 py-2.5 rounded-xl glass-input">
+                        <span class="text-sm font-medium">Main Color</span>
+                        <input type="color" id="color-dark" value="#ffffff">
+                    </div>
+                    
+                    <div class="flex items-center justify-between px-4 py-2.5 rounded-xl glass-input transition-opacity" id="bg-color-container">
+                        <span class="text-sm font-medium">Background</span>
+                        <input type="color" id="color-light" value="#000000">
+                    </div>
+
+                    <div class="flex items-center gap-3 px-4 py-3 rounded-xl glass-input hover:bg-white/5 transition">
+                        <input type="checkbox" id="bg-transparent">
+                        <label for="bg-transparent" class="text-sm font-medium cursor-pointer w-full">Transparent Background</label>
+                    </div>
+                </div>
+
+                <hr class="border-white/10">
+
+                <!-- Shapes & Eyes -->
+                <div class="space-y-4">
+                    <label class="block text-sm font-semibold text-white mb-2"><i class="fa-solid fa-shapes text-indigo-400 mr-2"></i>Shapes & Corners</label>
+                    
+                    <div class="relative">
+                        <select id="qr-style" class="w-full px-4 py-3 rounded-xl glass-input appearance-none text-sm font-medium">
+                            <option value="square" class="bg-slate-900">Pattern: Square</option>
+                            <option value="dots" class="bg-slate-900">Pattern: Dots</option>
+                            <option value="rounded" selected class="bg-slate-900">Pattern: Rounded</option>
+                            <option value="classy" class="bg-slate-900">Pattern: Classy</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+
+                    <div class="relative">
+                        <select id="eye-frame" class="w-full px-4 py-3 rounded-xl glass-input appearance-none text-sm font-medium">
+                            <option value="square" class="bg-slate-900">Eye Frame: Square</option>
+                            <option value="extra-rounded" selected class="bg-slate-900">Eye Frame: Rounded</option>
+                            <option value="dot" class="bg-slate-900">Eye Frame: Dot</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+
+                    <div class="flex items-center justify-between px-4 py-2.5 rounded-xl glass-input">
+                        <span class="text-sm font-medium">Corner Eye Color</span>
+                        <input type="color" id="eye-color" value="#ffffff">
+                    </div>
+                </div>
+
+                <hr class="border-white/10">
+
+                <!-- Technical -->
+                <div class="space-y-4">
+                    <label class="block text-sm font-semibold text-white mb-2"><i class="fa-solid fa-gear text-indigo-400 mr-2"></i>Technical Setup</label>
+                    
+                    <div class="relative">
+                        <select id="qr-ecc" class="w-full px-4 py-3 rounded-xl glass-input appearance-none text-sm font-medium">
+                            <option value="L" class="bg-slate-900">Security: Low (7%)</option>
+                            <option value="M" class="bg-slate-900">Security: Medium (15%)</option>
+                            <option value="Q" class="bg-slate-900">Security: Quarter (25%)</option>
+                            <option value="H" selected class="bg-slate-900">Security: High (30%)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+
+                    <div class="px-4 py-3 rounded-xl glass-input flex items-center gap-3">
+                        <span class="text-sm font-medium whitespace-nowrap w-24">Margin: <span id="margin-val">4</span>px</span>
+                        <input type="range" id="qr-margin" min="0" max="20" value="4" class="w-full">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sticky Generate Button inside Sidebar -->
+            <div class="p-6 border-t border-white/10 bg-slate-900/40 backdrop-blur-md shrink-0">
+                <button type="button" id="btn-generate" class="w-full btn-3d-primary font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 text-base uppercase tracking-wide">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Code
+                </button>
+            </div>
+        </aside>
+
+        <!-- Right Column: Live Preview & Export Container -->
+        <main class="flex-1 flex flex-col overflow-y-auto w-full relative">
+            <div class="w-full mx-auto p-6 lg:p-10 flex-1 flex flex-col items-center justify-center min-h-[600px]">
+                
+                <!-- Open Settings Prompt (Mobile Only) -->
+                <button id="btn-open-settings-main" class="lg:hidden mb-6 btn-3d-secondary py-2.5 px-6 rounded-full text-sm font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i> Open QR Settings
+                </button>
+
+                <!-- Glass Panel for Preview (Tightly hugging content) -->
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl w-full max-w-[420px] flex flex-col items-center relative shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                    
+                    <h2 class="block w-full text-center text-sm font-semibold text-white mb-6 tracking-wider uppercase opacity-80">
+                        <i class="fa-solid fa-eye text-indigo-400 mr-2"></i> Live Preview
+                    </h2>
+                    
+                    <!-- QR Code Frame -->
+                    <div class="w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] bg-black/50 rounded-2xl flex items-center justify-center overflow-hidden p-4 relative border border-white/10 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]">
+                        
+                        <div id="qr-canvas-wrapper" class="hidden w-full h-full flex items-center justify-center rounded-xl overflow-hidden bg-[#000] relative">
+                            <!-- Background pattern indicator for transparent -->
+                            <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 10px 10px;"></div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="placeholder" class="text-slate-400 flex flex-col items-center text-center p-4 z-10 transition-all duration-300">
+                            <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10 shadow-lg">
+                                <i class="fa-solid fa-qrcode text-3xl text-indigo-400/70"></i>
+                            </div>
+                            <span class="text-sm font-medium">Configure settings and<br>click Generate</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Export Settings -->
+                    <div class="w-full mt-8 pt-6 border-t border-white/10">
+                        <div class="flex items-center gap-4 mb-5">
+                            <span class="text-sm font-semibold text-slate-300">Output Size</span>
+                            <div class="relative flex-grow">
+                                <input type="number" id="export-size" value="1024" min="100" max="4000" class="w-full pl-5 pr-12 py-3 rounded-xl glass-input font-mono text-base font-bold text-center shadow-inner">
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 tracking-widest">PX</span>
+                            </div>
+                        </div>
+
+                        <!-- 3D Download Buttons -->
+                        <div class="grid grid-cols-2 gap-4 w-full">
+                            <button type="button" id="btn-png" disabled class="btn-3d-secondary py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 text-sm uppercase">
+                                <i class="fa-solid fa-image text-indigo-400 text-lg"></i> PNG
+                            </button>
+                            <button type="button" id="btn-svg" disabled class="btn-3d-secondary py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 text-sm uppercase">
+                                <i class="fa-solid fa-vector-square text-teal-400 text-lg"></i> SVG
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copyright Footer -->
+            <footer class="w-full text-center pb-6 text-slate-500 text-xs font-medium uppercase tracking-widest shrink-0">
+                &copy; <span id="current-year"></span> ProQR. All Rights Reserved.
+            </footer>
+        </main>
+
+    </div>
+
+    <!-- App Logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Auto Copyright Year
+            document.getElementById("current-year").textContent = new Date().getFullYear();
+
+            // Mobile Sidebar UI Logic
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("mobile-overlay");
+            const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
+            const btnCloseSidebar = document.getElementById("btn-close-sidebar");
+            const btnOpenSettingsMain = document.getElementById("btn-open-settings-main");
+
+            function openSidebar() {
+                sidebar.classList.remove("sidebar-closed");
+                sidebar.classList.add("sidebar-open");
+                overlay.classList.remove("hidden");
+                setTimeout(() => overlay.classList.remove("opacity-0"), 10);
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove("sidebar-open");
+                sidebar.classList.add("sidebar-closed");
+                overlay.classList.add("opacity-0");
+                setTimeout(() => overlay.classList.add("hidden"), 300);
+            }
+
+            btnToggleSidebar.addEventListener("click", openSidebar);
+            btnOpenSettingsMain.addEventListener("click", openSidebar);
+            btnCloseSidebar.addEventListener("click", closeSidebar);
+            overlay.addEventListener("click", closeSidebar);
+
+            // App State
+            let isGenerated = false;
+            let currentLogoDataUrl = null;
+
+            // QR DOM Elements
+            const qrText = document.getElementById("qr-text");
+            const colorDark = document.getElementById("color-dark");
+            const colorLight = document.getElementById("color-light");
+            const bgTransparent = document.getElementById("bg-transparent");
+            const bgColorContainer = document.getElementById("bg-color-container");
+            const qrStyle = document.getElementById("qr-style");
+            const eyeFrame = document.getElementById("eye-frame");
+            const eyeColor = document.getElementById("eye-color");
+            const qrEcc = document.getElementById("qr-ecc");
+            const qrMargin = document.getElementById("qr-margin");
+            const marginVal = document.getElementById("margin-val");
+            const exportSizeInput = document.getElementById("export-size");
+            
+            const logoInput = document.getElementById("logo-input");
+            const btnUpload = document.getElementById("btn-upload");
+            const btnClearLogo = document.getElementById("btn-clear-logo");
+
+            const btnGenerate = document.getElementById("btn-generate");
+            const qrWrapper = document.getElementById("qr-canvas-wrapper");
+            const placeholder = document.getElementById("placeholder");
+            const btnPng = document.getElementById("btn-png");
+            const btnSvg = document.getElementById("btn-svg");
+
+            // Initialize Engine
+            const qrCode = new QRCodeStyling({
+                width: 320,
+                height: 320,
+                type: "canvas",
+                margin: 4,
+                qrOptions: { errorCorrectionLevel: 'H' },
+                dotsOptions: { color: "#ffffff", type: "rounded" },
+                backgroundOptions: { color: "#000000" }
+            });
+            qrCode.append(qrWrapper);
+
+            // Logo Upload Logic
+            btnUpload.addEventListener("click", () => logoInput.click());
+            
+            logoInput.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentLogoDataUrl = event.target.result;
+                    btnUpload.innerHTML = `<i class="fa-solid fa-check text-green-400"></i> Uploaded`;
+                    btnClearLogo.classList.remove("hidden");
+                    qrEcc.value = "H"; // Force High Error Correction
+                    if (isGenerated) autoUpdate();
+                };
+                reader.readAsDataURL(file);
+            });
+
+            btnClearLogo.addEventListener("click", () => {
+                currentLogoDataUrl = null;
+                logoInput.value = "";
+                btnUpload.innerHTML = `<i class="fa-solid fa-upload"></i> Upload`;
+                btnClearLogo.classList.add("hidden");
+                if (isGenerated) autoUpdate();
+            });
+
+            // Transparent Background Toggle
+            bgTransparent.addEventListener("change", () => {
+                if(bgTransparent.checked) {
+                    bgColorContainer.style.opacity = "0.3";
+                    bgColorContainer.style.pointerEvents = "none";
+                } else {
+                    bgColorContainer.style.opacity = "1";
+                    bgColorContainer.style.pointerEvents = "auto";
+                }
+                if(isGenerated) autoUpdate();
+            });
+
+            // Margin Text Update
+            qrMargin.addEventListener("input", () => {
+                marginVal.textContent = qrMargin.value;
+                if(isGenerated) autoUpdate();
+            });
+
+            // Auto-update listeners
+            const inputsToWatch = [colorDark, colorLight, qrStyle, eyeFrame, eyeColor, qrEcc];
+            inputsToWatch.forEach(input => {
+                input.addEventListener("change", () => { if(isGenerated) autoUpdate() });
+            });
+            qrText.addEventListener("input", () => { if(isGenerated) autoUpdate() });
+
+            // Core Generation Function
+            function autoUpdate() {
+                const text = qrText.value.trim();
+                if (!text) return;
+
+                const bgColor = bgTransparent.checked ? "transparent" : colorLight.value;
+
+                qrCode.update({
+                    data: text,
+                    width: 320, 
+                    height: 320,
+                    margin: parseInt(qrMargin.value),
+                    qrOptions: { errorCorrectionLevel: qrEcc.value },
+                    dotsOptions: { color: colorDark.value, type: qrStyle.value },
+                    backgroundOptions: { color: bgColor },
+                    cornersSquareOptions: { color: eyeColor.value, type: eyeFrame.value },
+                    cornersDotOptions: { color: eyeColor.value, type: "dot" },
+                    image: currentLogoDataUrl,
+                    imageOptions: { crossOrigin: "anonymous", margin: 5, imageSize: 0.4 }
+                });
+
+                qrWrapper.style.backgroundColor = bgTransparent.checked ? "transparent" : bgColor;
+            }
+
+            // Generate Button Click
+            btnGenerate.addEventListener("click", () => {
+                if (!qrText.value.trim()) {
+                    qrText.classList.add("border-red-500", "shadow-[inset_0_2px_4px_rgba(0,0,0,0.3),_0_0_0_3px_rgba(239,68,68,0.3)]");
+                    setTimeout(() => qrText.classList.remove("border-red-500", "shadow-[inset_0_2px_4px_rgba(0,0,0,0.3),_0_0_0_3px_rgba(239,68,68,0.3)]"), 1000);
+                    // Scroll to top of sidebar so user sees the red box
+                    sidebar.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
+
+                autoUpdate();
+
+                placeholder.classList.add('hidden');
+                qrWrapper.classList.remove('hidden');
+
+                [btnPng, btnSvg].forEach(btn => btn.disabled = false);
+                isGenerated = true;
+
+                // On Mobile: Automatically close sidebar to show the user their generated code
+                if(window.innerWidth < 1024) {
+                    closeSidebar();
+                }
+            });
+
+            // Export PNG
+            btnPng.addEventListener("click", () => {
+                if (!isGenerated) return;
+                
+                let size = Math.max(100, Math.min(4000, parseInt(exportSizeInput.value) || 1024));
+                exportSizeInput.value = size;
+
+                qrCode.update({ width: size, height: size });
+                const originalText = btnPng.innerHTML;
+                btnPng.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-lg"></i> SAVING';
+
+                qrCode.download({ name: `ProQR_${size}px`, extension: "png" }).then(() => {
+                    qrCode.update({ width: 320, height: 320 });
+                    btnPng.innerHTML = originalText;
+                });
+            });
+
+            // Export SVG (NOW DYNAMICALLY SIZED TO MATCH PNG INPUT)
+            btnSvg.addEventListener("click", () => {
+                if (!isGenerated) return;
+                
+                // Get exact size requested by user (clamps between 100 and 4000)
+                let size = Math.max(100, Math.min(4000, parseInt(exportSizeInput.value) || 1024));
+                exportSizeInput.value = size;
+
+                // Update the engine to process the exact size for the SVG width/height attributes
+                qrCode.update({ width: size, height: size }); 
+                
+                const originalText = btnSvg.innerHTML;
+                btnSvg.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-lg"></i> SAVING';
+
+                qrCode.download({ name: `ProQR_Vector_${size}px`, extension: "svg" }).then(() => {
+                    // Restore the visual preview back to 320px
+                    qrCode.update({ width: 320, height: 320 });
+                    btnSvg.innerHTML = originalText;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
